@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub};
 
-use super::approx_eq;
 use super::vector::Vector;
+use crate::utils::approx_eq;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Point {

@@ -1,5 +1,7 @@
 #[allow(dead_code)]
+mod canvas;
 mod primitives;
+mod utils;
 
-pub use primitives::point::Point;
-pub use primitives::vector::Vector;
+pub use canvas::{Canvas, Color};
+pub use primitives::{Point, Vector};
