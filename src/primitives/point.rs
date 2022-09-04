@@ -1,37 +1,32 @@
 use std::ops::{Add, Sub};
 
+use super::approx_eq;
 use super::vector::Vector;
-use super::{approx_eq, Tuple};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
     pub z: f64,
-    pub w: f64,
 }
 
-impl Tuple for Point {
-    fn new(x: f64, y: f64, z: f64) -> Self {
-        Point { x, y, z, w: 1.0 }
+impl Point {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Point { x, y, z }
     }
 
-    fn zero() -> Self {
+    pub fn zero() -> Self {
         Point {
             x: 0.0,
             y: 0.0,
             z: 0.0,
-            w: 1.0,
         }
     }
 }
 
 impl PartialEq for Point {
     fn eq(&self, other: &Self) -> bool {
-        approx_eq(self.x, other.x)
-            && approx_eq(self.y, other.y)
-            && approx_eq(self.z, other.z)
-            && approx_eq(self.w, other.w)
+        approx_eq(self.x, other.x) && approx_eq(self.y, other.y) && approx_eq(self.z, other.z)
     }
 }
 
@@ -43,7 +38,6 @@ impl Add<Vector> for Point {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
             z: self.z + rhs.z,
-            w: self.w + rhs.w,
         }
     }
 }
@@ -56,7 +50,6 @@ impl Sub<Vector> for Point {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
             z: self.z - rhs.z,
-            w: self.w - rhs.w,
         }
     }
 }
@@ -69,7 +62,6 @@ impl Sub<Point> for Point {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
             z: self.z - rhs.z,
-            w: self.w - rhs.w,
         }
     }
 }
@@ -84,7 +76,6 @@ mod tests {
         assert_eq!(point.x, 4.0);
         assert_eq!(point.y, -4.0);
         assert_eq!(point.z, 3.0);
-        assert_eq!(point.w, 1.0);
     }
 
     #[test]
@@ -93,7 +84,6 @@ mod tests {
         assert_eq!(point.x, 0.0);
         assert_eq!(point.y, 0.0);
         assert_eq!(point.z, 0.0);
-        assert_eq!(point.w, 1.0);
     }
 
     #[test]

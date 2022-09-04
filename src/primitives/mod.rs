@@ -1,10 +1,8 @@
-pub mod point;
-pub mod vector;
+pub(crate) mod point;
+pub(crate) mod vector;
 
-pub trait Tuple {
-    fn new(x: f64, y: f64, z: f64) -> Self;
-    fn zero() -> Self;
-}
+pub use point::Point;
+pub use vector::Vector;
 
 pub const EPSILON: f64 = 1e-6;
 
