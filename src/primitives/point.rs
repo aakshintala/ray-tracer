@@ -3,24 +3,27 @@ use std::ops::{Add, Sub};
 use super::vector::Vector;
 use crate::utils::approx_eq;
 
+const POINT_W: f64 = 0.0;
 #[derive(Clone, Copy, Debug)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
     pub z: f64,
+    pub w: f64,
 }
 
 impl Point {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Point { x, y, z }
+    pub const fn new(x: f64, y: f64, z: f64) -> Self {
+        Point {
+            x,
+            y,
+            z,
+            w: POINT_W,
+        }
     }
 
-    pub fn zero() -> Self {
-        Point {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        }
+    pub const fn zero() -> Self {
+        Point::new(0.0, 0.0, 0.0)
     }
 }
 
@@ -30,39 +33,27 @@ impl PartialEq for Point {
     }
 }
 
-impl Add<Vector> for Point {
+impl Add<&Vector> for Point {
     type Output = Point;
 
-    fn add(self, rhs: Vector) -> Self::Output {
-        Point {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-        }
+    fn add(self, rhs: &Vector) -> Self::Output {
+        Point::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
-impl Sub<Vector> for Point {
+impl Sub<&Vector> for Point {
     type Output = Point;
 
-    fn sub(self, rhs: Vector) -> Self::Output {
-        Point {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
-        }
+    fn sub(self, rhs: &Vector) -> Self::Output {
+        Point::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
 }
 
-impl Sub<Point> for Point {
+impl Sub<&Point> for Point {
     type Output = Vector;
 
-    fn sub(self, rhs: Point) -> Self::Output {
-        Vector {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
-        }
+    fn sub(self, rhs: &Point) -> Self::Output {
+        Vector::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
 }
 
@@ -105,7 +96,7 @@ mod tests {
         let point = Point::new(4.0, -4.0, 3.0);
         let vector = Vector::new(1.0, -1.0, 1.0);
         let result = Point::new(5.0, -5.0, 4.0);
-        assert_eq!(point + vector, result);
+        assert_eq!(point + &vector, result);
     }
 
     #[test]
@@ -113,7 +104,7 @@ mod tests {
         let point1 = Point::new(4.0, -4.0, 3.0);
         let point2 = Point::new(4.0, -4.0, 3.0);
         let result = Vector::zero();
-        assert_eq!(point1 - point2, result);
+        assert_eq!(point1 - &point2, result);
     }
 
     #[test]
@@ -121,10 +112,10 @@ mod tests {
         let point1 = Point::new(4.0, -4.0, 3.0);
         let zero_point = Point::zero();
         let result1 = Vector::new(-4.0, 4.0, -3.0);
-        assert_eq!(zero_point - point1, result1);
+        assert_eq!(zero_point - &point1, result1);
 
         let result2 = Vector::new(4.0, -4.0, 3.0);
-        assert_eq!(point1 - zero_point, result2);
+        assert_eq!(point1 - &zero_point, result2);
     }
 
     #[test]
@@ -132,9 +123,9 @@ mod tests {
         let point = Point::new(4.0, -4.0, 3.0);
         let vector = Vector::new(1.0, -1.0, 1.0);
         let result = Point::new(3.0, -3.0, 2.0);
-        assert_eq!(point - vector, result);
+        assert_eq!(point - &vector, result);
 
         let zero_vector = Vector::zero();
-        assert_eq!(point - zero_vector, point);
+        assert_eq!(point - &zero_vector, point);
     }
 }

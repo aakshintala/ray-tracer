@@ -1,25 +1,34 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
 
 use super::point::Point;
 use crate::utils::approx_eq;
+
+const VECTOR_W: f64 = 0.0;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Vector {
     pub x: f64,
     pub y: f64,
     pub z: f64,
+    pub w: f64,
 }
 
 impl Vector {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Vector { x, y, z }
+    pub const fn new(x: f64, y: f64, z: f64) -> Self {
+        Vector {
+            x,
+            y,
+            z,
+            w: VECTOR_W,
+        }
     }
 
-    pub fn zero() -> Self {
+    pub const fn zero() -> Self {
         Vector {
             x: 0.0,
             y: 0.0,
             z: 0.0,
+            w: VECTOR_W,
         }
     }
 
@@ -29,11 +38,7 @@ impl Vector {
 
     pub fn normalize(&self) -> Self {
         let magnitude = self.magnitude();
-        Vector {
-            x: self.x / magnitude,
-            y: self.y / magnitude,
-            z: self.z / magnitude,
-        }
+        Vector::new(self.x / magnitude, self.y / magnitude, self.z / magnitude)
     }
 
     pub fn dot_product(&self, rhs: &Vector) -> f64 {
@@ -41,11 +46,11 @@ impl Vector {
     }
 
     pub fn cross_product(&self, rhs: &Vector) -> Vector {
-        Vector {
-            x: self.y * rhs.z - self.z * rhs.y,
-            y: self.z * rhs.x - self.x * rhs.z,
-            z: self.x * rhs.y - self.y * rhs.x,
-        }
+        Vector::new(
+            self.y * rhs.z - self.z * rhs.y,
+            self.z * rhs.x - self.x * rhs.z,
+            self.x * rhs.y - self.y * rhs.x,
+        )
     }
 }
 
@@ -55,39 +60,27 @@ impl PartialEq for Vector {
     }
 }
 
-impl Add<Vector> for Vector {
+impl Add<&Vector> for Vector {
     type Output = Vector;
 
-    fn add(self, rhs: Vector) -> Self::Output {
-        Vector {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-        }
+    fn add(self, rhs: &Vector) -> Self::Output {
+        Vector::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
-impl Add<Point> for Vector {
+impl Add<&Point> for Vector {
     type Output = Point;
 
-    fn add(self, rhs: Point) -> Self::Output {
-        Point {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-        }
+    fn add(self, rhs: &Point) -> Self::Output {
+        Point::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
-impl Sub<Vector> for Vector {
+impl Sub<&Vector> for Vector {
     type Output = Vector;
 
-    fn sub(self, rhs: Vector) -> Self::Output {
-        Vector {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
-        }
+    fn sub(self, rhs: &Vector) -> Self::Output {
+        Vector::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
 }
 
@@ -95,11 +88,7 @@ impl Neg for Vector {
     type Output = Vector;
 
     fn neg(self) -> Self::Output {
-        Vector {
-            x: 0.0 - self.x,
-            y: 0.0 - self.y,
-            z: 0.0 - self.z,
-        }
+        Vector::new(0.0 - self.x, 0.0 - self.y, 0.0 - self.z)
     }
 }
 
@@ -107,11 +96,7 @@ impl Mul<f64> for Vector {
     type Output = Vector;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        Vector {
-            x: self.x * rhs,
-            y: self.y * rhs,
-            z: self.z * rhs,
-        }
+        Vector::new(self.x * rhs, self.y * rhs, self.z * rhs)
     }
 }
 
@@ -119,10 +104,32 @@ impl Div<f64> for Vector {
     type Output = Vector;
 
     fn div(self, rhs: f64) -> Self::Output {
-        Vector {
-            x: self.x / rhs,
-            y: self.y / rhs,
-            z: self.z / rhs,
+        Vector::new(self.x / rhs, self.y / rhs, self.z / rhs)
+    }
+}
+
+impl Index<usize> for Vector {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            3 => &self.w,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl IndexMut<usize> for Vector {
+    fn index_mut(&mut self, index: usize) -> &mut f64 {
+        match index {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
+            3 => &mut self.w,
+            _ => unreachable!(),
         }
     }
 }
@@ -137,6 +144,7 @@ mod tests {
         assert_eq!(vector.x, 4.0);
         assert_eq!(vector.y, -4.0);
         assert_eq!(vector.z, 3.0);
+        assert_eq!(vector.w, VECTOR_W);
     }
 
     #[test]
@@ -145,6 +153,7 @@ mod tests {
         assert_eq!(vector.x, 0.0);
         assert_eq!(vector.y, 0.0);
         assert_eq!(vector.z, 0.0);
+        assert_eq!(vector.w, VECTOR_W);
     }
 
     #[test]
@@ -166,7 +175,7 @@ mod tests {
         let vector1 = Vector::new(4.0, -4.0, 3.0);
         let vector2 = Vector::new(1.0, -1.0, 1.0);
         let result = Vector::new(5.0, -5.0, 4.0);
-        assert_eq!(vector1 + vector2, result);
+        assert_eq!(vector1 + &vector2, result);
     }
 
     #[test]
@@ -174,7 +183,7 @@ mod tests {
         let vector = Vector::new(4.0, -4.0, 3.0);
         let point = Point::new(1.0, -1.0, 1.0);
         let result = Point::new(5.0, -5.0, 4.0);
-        assert_eq!(vector + point, result);
+        assert_eq!(vector + &point, result);
     }
 
     #[test]
@@ -182,7 +191,7 @@ mod tests {
         let vector1 = Vector::new(4.0, -4.0, 3.0);
         let vector2 = Vector::new(4.0, -4.0, 3.0);
         let result = Vector::zero();
-        assert_eq!(vector1 - vector2, result);
+        assert_eq!(vector1 - &vector2, result);
     }
 
     #[test]
@@ -261,20 +270,9 @@ mod tests {
         let vector2 = Vector::new(2.0, 3.0, 4.0);
         assert_eq!(
             vector1.cross_product(&vector2),
-            Vector {
-                x: -1.0,
-                y: 2.0,
-                z: -1.0
-            }
+            Vector::new(-1.0, 2.0, -1.0)
         );
 
-        assert_eq!(
-            vector2.cross_product(&vector1),
-            Vector {
-                x: 1.0,
-                y: -2.0,
-                z: 1.0
-            }
-        )
+        assert_eq!(vector2.cross_product(&vector1), Vector::new(1.0, -2.0, 1.0))
     }
 }

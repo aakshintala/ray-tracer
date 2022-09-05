@@ -1,4 +1,5 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
+
 mod canvas;
 mod primitives;
 mod utils;
