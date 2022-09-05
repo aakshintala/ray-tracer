@@ -12,8 +12,8 @@ struct Projectile {
 
 impl Projectile {
     pub fn tick(&mut self, env: &Environment) {
-        self.position = self.position + &self.velocity;
-        self.velocity = self.velocity + &env.gravity + &env.wind;
+        self.position = self.position + self.velocity;
+        self.velocity = self.velocity + env.gravity + env.wind;
     }
 }
 fn clamp(value: f64, max: usize) -> usize {

@@ -60,26 +60,26 @@ impl PartialEq for Vector {
     }
 }
 
-impl Add<&Vector> for Vector {
+impl Add<Vector> for Vector {
     type Output = Vector;
 
-    fn add(self, rhs: &Vector) -> Self::Output {
+    fn add(self, rhs: Vector) -> Self::Output {
         Vector::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
-impl Add<&Point> for Vector {
+impl Add<Point> for Vector {
     type Output = Point;
 
-    fn add(self, rhs: &Point) -> Self::Output {
+    fn add(self, rhs: Point) -> Self::Output {
         Point::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
-impl Sub<&Vector> for Vector {
+impl Sub<Vector> for Vector {
     type Output = Vector;
 
-    fn sub(self, rhs: &Vector) -> Self::Output {
+    fn sub(self, rhs: Vector) -> Self::Output {
         Vector::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
 }
@@ -175,7 +175,7 @@ mod tests {
         let vector1 = Vector::new(4.0, -4.0, 3.0);
         let vector2 = Vector::new(1.0, -1.0, 1.0);
         let result = Vector::new(5.0, -5.0, 4.0);
-        assert_eq!(vector1 + &vector2, result);
+        assert_eq!(vector1 + vector2, result);
     }
 
     #[test]
@@ -183,7 +183,7 @@ mod tests {
         let vector = Vector::new(4.0, -4.0, 3.0);
         let point = Point::new(1.0, -1.0, 1.0);
         let result = Point::new(5.0, -5.0, 4.0);
-        assert_eq!(vector + &point, result);
+        assert_eq!(vector + point, result);
     }
 
     #[test]
@@ -191,7 +191,7 @@ mod tests {
         let vector1 = Vector::new(4.0, -4.0, 3.0);
         let vector2 = Vector::new(4.0, -4.0, 3.0);
         let result = Vector::zero();
-        assert_eq!(vector1 - &vector2, result);
+        assert_eq!(vector1 - vector2, result);
     }
 
     #[test]

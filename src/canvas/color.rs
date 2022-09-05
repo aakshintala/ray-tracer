@@ -33,18 +33,18 @@ impl Color {
     }
 }
 
-impl Add<&Color> for Color {
+impl Add<Color> for Color {
     type Output = Color;
 
-    fn add(self, rhs: &Color) -> Self::Output {
+    fn add(self, rhs: Color) -> Self::Output {
         Color::new(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b)
     }
 }
 
-impl Sub<&Color> for Color {
+impl Sub<Color> for Color {
     type Output = Color;
 
-    fn sub(self, rhs: &Color) -> Self::Output {
+    fn sub(self, rhs: Color) -> Self::Output {
         Color::new(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b)
     }
 }
@@ -57,10 +57,10 @@ impl Mul<f64> for Color {
     }
 }
 
-impl Mul<&Color> for Color {
+impl Mul<Color> for Color {
     type Output = Color;
 
-    fn mul(self, rhs: &Color) -> Self::Output {
+    fn mul(self, rhs: Color) -> Self::Output {
         Color::new(self.r * rhs.r, self.g * rhs.g, self.b * rhs.b)
     }
 }
@@ -94,7 +94,7 @@ mod tests {
         let color1 = Color::new(0.9, 0.6, 0.75);
         let color2 = Color::new(0.7, 0.1, 0.25);
         let expected = Color::new(1.6, 0.7, 1.0);
-        assert_eq!(color1 + &color2, expected);
+        assert_eq!(color1 + color2, expected);
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod tests {
         let color1 = Color::new(0.9, 0.6, 0.75);
         let color2 = Color::new(0.7, 0.1, 0.25);
         let expected = Color::new(0.2, 0.5, 0.5);
-        assert_eq!(color1 - &color2, expected);
+        assert_eq!(color1 - color2, expected);
     }
 
     #[test]
@@ -117,6 +117,6 @@ mod tests {
         let color1 = Color::new(0.9, 0.6, 0.75);
         let color2 = Color::new(1.0, 0.1, -2.0);
         let expected = Color::new(0.9, 0.06, -1.5);
-        assert_eq!(color1 * &color2, expected);
+        assert_eq!(color1 * color2, expected);
     }
 }

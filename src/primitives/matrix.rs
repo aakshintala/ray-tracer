@@ -1,7 +1,7 @@
 use std::ops::{Index, IndexMut, Mul};
 
 use crate::utils::approx_eq;
-use crate::Vector;
+use crate::{Point, Vector};
 
 #[derive(Clone, Debug)]
 pub struct Matrix<const N: usize> {
@@ -163,6 +163,72 @@ impl Matrix<4> {
         }
         matrix
     }
+
+    pub fn translation(x: f64, y: f64, z: f64) -> Matrix<4> {
+        let mut translation_matrix = Matrix::<4>::identity();
+
+        translation_matrix[0][3] = x;
+        translation_matrix[1][3] = y;
+        translation_matrix[2][3] = z;
+
+        translation_matrix
+    }
+
+    pub fn scaling(x: f64, y: f64, z: f64) -> Matrix<4> {
+        let mut scaling_matrix = Matrix::<4>::identity();
+
+        scaling_matrix[0][0] = x;
+        scaling_matrix[1][1] = y;
+        scaling_matrix[2][2] = z;
+
+        scaling_matrix
+    }
+
+    pub(crate) fn rotation_x(radians: f64) -> Matrix<4> {
+        let mut rotation_matrix = Matrix::<4>::identity();
+
+        rotation_matrix[1][1] = radians.cos();
+        rotation_matrix[1][2] = -radians.sin();
+        rotation_matrix[2][1] = radians.sin();
+        rotation_matrix[2][2] = radians.cos();
+
+        rotation_matrix
+    }
+
+    pub(crate) fn rotation_y(radians: f64) -> Matrix<4> {
+        let mut rotation_matrix = Matrix::<4>::identity();
+
+        rotation_matrix[0][0] = radians.cos();
+        rotation_matrix[0][2] = radians.sin();
+        rotation_matrix[2][0] = -radians.sin();
+        rotation_matrix[2][2] = radians.cos();
+
+        rotation_matrix
+    }
+
+    pub(crate) fn rotation_z(radians: f64) -> Matrix<4> {
+        let mut rotation_matrix = Matrix::<4>::identity();
+
+        rotation_matrix[0][0] = radians.cos();
+        rotation_matrix[0][1] = -radians.sin();
+        rotation_matrix[1][0] = radians.sin();
+        rotation_matrix[1][1] = radians.cos();
+
+        rotation_matrix
+    }
+
+    pub(crate) fn shearing(xy: f64, xz: f64, yx: f64, yz: f64, zx: f64, zy: f64) -> Matrix<4> {
+        let mut shearing_matrix = Matrix::<4>::identity();
+
+        shearing_matrix[0][1] = xy;
+        shearing_matrix[0][2] = xz;
+        shearing_matrix[1][0] = yx;
+        shearing_matrix[1][2] = yz;
+        shearing_matrix[2][0] = zx;
+        shearing_matrix[2][1] = zy;
+
+        shearing_matrix
+    }
 }
 
 impl<const N: usize> PartialEq<Matrix<N>> for Matrix<N> {
@@ -191,10 +257,10 @@ impl<const N: usize> IndexMut<usize> for Matrix<N> {
     }
 }
 
-impl<const N: usize> Mul<&Matrix<N>> for Matrix<N> {
+impl<const N: usize> Mul<Matrix<N>> for Matrix<N> {
     type Output = Matrix<N>;
 
-    fn mul(self, rhs: &Matrix<N>) -> Self::Output {
+    fn mul(self, rhs: Matrix<N>) -> Self::Output {
         let mut new_matrix = Matrix::new();
         for i in 0..N {
             for j in 0..N {
@@ -207,29 +273,33 @@ impl<const N: usize> Mul<&Matrix<N>> for Matrix<N> {
     }
 }
 
-impl Mul<&Vector> for Matrix<4> {
+impl Mul<Vector> for Matrix<4> {
     type Output = Vector;
 
-    fn mul(self, rhs: &Vector) -> Self::Output {
+    fn mul(self, rhs: Vector) -> Self::Output {
         let mut result = Vector::zero();
         for i in 0..4 {
+            let mut sum: f64 = 0.0;
             for j in 0..4 {
-                result[i] += self[i][j] * rhs[j];
+                sum += self[i][j] * rhs[j];
             }
+            result[i] = sum;
         }
         result
     }
 }
 
-impl Mul<&Matrix<4>> for Vector {
-    type Output = Vector;
+impl Mul<Point> for Matrix<4> {
+    type Output = Point;
 
-    fn mul(self, rhs: &Matrix<4>) -> Self::Output {
-        let mut result = Vector::zero();
+    fn mul(self, rhs: Point) -> Self::Output {
+        let mut result = Point::zero();
         for i in 0..4 {
+            let mut sum: f64 = 0.0;
             for j in 0..4 {
-                result[i] += rhs[i][j] * self[j];
+                sum += self[i][j] * rhs[j];
             }
+            result[i] = sum;
         }
         result
     }
@@ -237,6 +307,8 @@ impl Mul<&Matrix<4>> for Vector {
 
 #[cfg(test)]
 mod test {
+    use std::f64::consts::PI;
+
     use super::*;
 
     #[test]
@@ -308,7 +380,7 @@ mod test {
             [40.0, 58.0, 110.0, 102.0],
             [16.0, 26.0, 46.0, 42.0],
         ]);
-        assert_eq!(M1 * &M2, EXPECTED);
+        assert_eq!(M1 * M2, EXPECTED);
     }
 
     #[test]
@@ -321,7 +393,7 @@ mod test {
         ]);
         const VECTOR1: Vector = Vector::new(1.0, 2.0, 3.0);
         const EXPECTED: Vector = Vector::new(14.0, 22.0, 32.0);
-        assert_eq!(MATRIX1 * &VECTOR1, EXPECTED);
+        assert_eq!(MATRIX1 * VECTOR1, EXPECTED);
     }
 
     #[test]
@@ -333,14 +405,14 @@ mod test {
             [5.0, 4.0, 3.0, 2.0],
         ]);
         let matrix2: Matrix<4> = Matrix::<4>::identity();
-        assert_eq!(MATRIX1.clone() * &matrix2, MATRIX1);
+        assert_eq!(MATRIX1.clone() * matrix2, MATRIX1);
     }
 
     #[test]
     pub fn indentity4_vector_multiplication() {
         let matrix1: Matrix<4> = Matrix::<4>::identity();
         const VECTOR1: Vector = Vector::new(1.0, 2.0, 3.0);
-        assert_eq!(matrix1 * &VECTOR1, VECTOR1);
+        assert_eq!(matrix1 * VECTOR1, VECTOR1);
     }
 
     #[test]
@@ -574,9 +646,216 @@ mod test {
             [6.0, -2.0, 0.0, 5.0],
         ]);
 
-        let c = M1 * &M2;
+        let c = M1 * M2;
         let b_inverse = M2.inverse();
 
-        assert_eq!(c * &b_inverse, M1);
+        assert_eq!(c * b_inverse, M1);
+    }
+
+    #[test]
+    fn multiplying_a_point_by_a_translation_matrix() {
+        let transform = Matrix::translation(5.0, -3.0, 2.0);
+        let p = Point::new(-3.0, 4.0, 5.0);
+        let expected_result = Point::new(2.0, 1.0, 7.0);
+
+        let actual_result = transform * p;
+        assert_eq!(actual_result, expected_result);
+    }
+
+    #[test]
+    fn multiplying_a_point_by_the_inverse_of_a_translation_matrix() {
+        let transform = Matrix::translation(5.0, -3.0, 2.0);
+        let inverse_transform = transform.inverse();
+        let p = Point::new(-3.0, 4.0, 5.0);
+        let expected_result = Point::new(-8.0, 7.0, 3.0);
+
+        let actual_result = inverse_transform * p;
+        assert_eq!(actual_result, expected_result);
+    }
+
+    #[test]
+    fn translation_does_not_affect_vectors() {
+        let transform = Matrix::translation(5.0, -3.0, 2.0);
+        let v = Vector::new(-3.0, 4.0, 5.0);
+        let expected_result = v;
+
+        let actual_result = transform * v;
+        assert_eq!(actual_result, expected_result);
+    }
+
+    #[test]
+    fn a_scaling_matrix_applied_to_a_point() {
+        let transform = Matrix::scaling(2.0, 3.0, 4.0);
+        let p = Point::new(-4.0, 6.0, 8.0);
+        let expected_result = Point::new(-8.0, 18.0, 32.0);
+
+        let actual_result = transform * p;
+        assert_eq!(actual_result, expected_result);
+    }
+
+    #[test]
+    fn a_scaling_matrix_applied_to_a_vector() {
+        let transform = Matrix::scaling(2.0, 3.0, 4.0);
+        let v = Vector::new(-4.0, 6.0, 8.0);
+        let expected_result = Vector::new(-8.0, 18.0, 32.0);
+
+        let actual_result = transform * v;
+        assert_eq!(actual_result, expected_result);
+    }
+
+    #[test]
+    fn multiplying_by_the_inverse_of_a_scaling_matrix() {
+        let transform = Matrix::scaling(2.0, 3.0, 4.0);
+        let inverse_transform = transform.inverse();
+        let v = Vector::new(-4.0, 6.0, 8.0);
+        let expected_result = Vector::new(-2.0, 2.0, 2.0);
+
+        let actual_result = inverse_transform * v;
+        assert_eq!(actual_result, expected_result);
+    }
+
+    #[test]
+    fn reflection_is_scaling_by_a_negative_value() {
+        let transform = Matrix::scaling(-1.0, 1.0, 1.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+        let expected_result = Point::new(-2.0, 3.0, 4.0);
+
+        let actual_result = transform * p;
+        assert_eq!(actual_result, expected_result);
+    }
+
+    #[test]
+    fn rotating_a_point_around_the_x_axis() {
+        let half_quarter = Matrix::rotation_x(PI / 4.0);
+        let full_quarter = Matrix::rotation_x(PI / 2.0);
+        let p = Point::new(0.0, 1.0, 0.0);
+
+        assert_eq!(
+            half_quarter * p,
+            Point::new(0.0, (2.0 as f64).sqrt() / 2.0, (2.0 as f64).sqrt() / 2.0)
+        );
+
+        assert_eq!(full_quarter * p, Point::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn the_inverse_of_an_x_rotation_rotates_in_the_opposite_direction() {
+        let half_quarter = Matrix::rotation_x(PI / 4.0);
+        let full_quarter = Matrix::rotation_x(PI / 2.0);
+        let inverse_half_quarter = half_quarter.inverse();
+        let inverse_full_quarter = full_quarter.inverse();
+
+        let p = Point::new(0.0, 1.0, 0.0);
+
+        assert_eq!(
+            inverse_half_quarter * p,
+            Point::new(0.0, (2.0 as f64).sqrt() / 2.0, -(2.0 as f64).sqrt() / 2.0)
+        );
+
+        assert_eq!(inverse_full_quarter * p, Point::new(0.0, 0.0, -1.0));
+    }
+
+    #[test]
+    fn rotating_a_point_around_the_y_axis() {
+        let half_quarter = Matrix::rotation_y(PI / 4.0);
+        let full_quarter = Matrix::rotation_y(PI / 2.0);
+        let p = Point::new(0.0, 0.0, 1.0);
+
+        assert_eq!(
+            half_quarter * p,
+            Point::new((2.0 as f64).sqrt() / 2.0, 0.0, (2.0 as f64).sqrt() / 2.0)
+        );
+
+        assert_eq!(full_quarter * p, Point::new(1.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn rotating_a_point_around_the_z_axis() {
+        let half_quarter = Matrix::rotation_z(PI / 4.0);
+        let full_quarter = Matrix::rotation_z(PI / 2.0);
+        let p = Point::new(0.0, 1.0, 0.0);
+
+        assert_eq!(
+            half_quarter * p,
+            Point::new(-(2.0 as f64).sqrt() / 2.0, (2.0 as f64).sqrt() / 2.0, 0.0)
+        );
+
+        assert_eq!(full_quarter * p, Point::new(-1.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn a_shearing_transformation_moves_x_in_proportion_to_y() {
+        let transform = Matrix::shearing(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+
+        assert_eq!(transform * p, Point::new(5.0, 3.0, 4.0));
+    }
+
+    #[test]
+    fn a_shearing_transformation_moves_x_in_proportion_to_z() {
+        let transform = Matrix::shearing(0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+
+        assert_eq!(transform * p, Point::new(6.0, 3.0, 4.0));
+    }
+
+    #[test]
+    fn a_shearing_transformation_moves_y_in_proportion_to_x() {
+        let transform = Matrix::shearing(0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+
+        assert_eq!(transform * p, Point::new(2.0, 5.0, 4.0));
+    }
+
+    #[test]
+    fn a_shearing_transformation_moves_y_in_proportion_to_z() {
+        let transform = Matrix::shearing(0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+
+        assert_eq!(transform * p, Point::new(2.0, 7.0, 4.0));
+    }
+
+    #[test]
+    fn a_shearing_transformation_moves_z_in_proportion_to_x() {
+        let transform = Matrix::shearing(0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+
+        assert_eq!(transform * p, Point::new(2.0, 3.0, 6.0));
+    }
+
+    #[test]
+    fn a_shearing_transformation_moves_z_in_proportion_to_y() {
+        let transform = Matrix::shearing(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+
+        assert_eq!(transform * p, Point::new(2.0, 3.0, 7.0));
+    }
+
+    #[test]
+    fn individual_transformation_are_applied_in_sequence() {
+        let p = Point::new(1.0, 0.0, 1.0);
+        let a = Matrix::rotation_x(PI / 2.0);
+        let b = Matrix::scaling(5.0, 5.0, 5.0);
+        let c = Matrix::translation(10.0, 5.0, 7.0);
+
+        let p2 = a * p;
+        assert_eq!(p2, Point::new(1.0, -1.0, 0.0));
+
+        let p3 = b * p2;
+        assert_eq!(p3, Point::new(5.0, -5.0, 0.0));
+
+        let p4 = c.clone() * p3;
+        assert_eq!(p4, Point::new(15.0, 0.0, 7.0));
+    }
+
+    #[test]
+    fn chained_transformations_must_be_applied_in_reverse_order() {
+        let p = Point::new(1.0, 0.0, 1.0);
+        let a = Matrix::rotation_x(PI / 2.0);
+        let b = Matrix::scaling(5.0, 5.0, 5.0);
+        let c = Matrix::translation(10.0, 5.0, 7.0);
+
+        let transform = c * b * a;
+        assert_eq!(transform * p, Point::new(15.0, 0.0, 7.0));
     }
 }
