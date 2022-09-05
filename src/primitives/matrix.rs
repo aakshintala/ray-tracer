@@ -23,11 +23,7 @@ impl<const N: usize> Matrix<N> {
         let mut data = [[0.0; N]; N];
 
         for i in 0..N {
-            for j in 0..N {
-                if i == j {
-                    data[i][j] = 1.0;
-                }
-            }
+            data[i][i] = 1.0;
         }
 
         Self { data }
