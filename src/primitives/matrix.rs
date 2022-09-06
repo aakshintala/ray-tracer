@@ -3,7 +3,7 @@ use std::ops::{Index, IndexMut, Mul};
 use crate::utils::approx_eq;
 use crate::{Point, Vector};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct Matrix<const N: usize> {
     data: [[f64; N]; N],
 }
@@ -180,7 +180,7 @@ impl Matrix<4> {
         scaling_matrix
     }
 
-    pub(crate) fn rotation_x(radians: f64) -> Matrix<4> {
+    pub fn rotation_x(radians: f64) -> Matrix<4> {
         let mut rotation_matrix = Matrix::<4>::identity();
 
         rotation_matrix[1][1] = radians.cos();
@@ -191,7 +191,7 @@ impl Matrix<4> {
         rotation_matrix
     }
 
-    pub(crate) fn rotation_y(radians: f64) -> Matrix<4> {
+    pub fn rotation_y(radians: f64) -> Matrix<4> {
         let mut rotation_matrix = Matrix::<4>::identity();
 
         rotation_matrix[0][0] = radians.cos();
@@ -202,7 +202,7 @@ impl Matrix<4> {
         rotation_matrix
     }
 
-    pub(crate) fn rotation_z(radians: f64) -> Matrix<4> {
+    pub fn rotation_z(radians: f64) -> Matrix<4> {
         let mut rotation_matrix = Matrix::<4>::identity();
 
         rotation_matrix[0][0] = radians.cos();
@@ -213,7 +213,7 @@ impl Matrix<4> {
         rotation_matrix
     }
 
-    pub(crate) fn shearing(xy: f64, xz: f64, yx: f64, yz: f64, zx: f64, zy: f64) -> Matrix<4> {
+    pub fn shearing(xy: f64, xz: f64, yx: f64, yz: f64, zx: f64, zy: f64) -> Matrix<4> {
         let mut shearing_matrix = Matrix::<4>::identity();
 
         shearing_matrix[0][1] = xy;

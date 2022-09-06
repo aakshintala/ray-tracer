@@ -36,7 +36,6 @@ impl Canvas {
 
     pub fn write_pixel(&mut self, x: usize, y: usize, new_color: &Color) {
         if x < self.width && y < self.height {
-            println!("{x}, {y}, {0}", (x * self.height) + y);
             self.pixels[(x * self.height) + y] = new_color.clone();
         }
     }

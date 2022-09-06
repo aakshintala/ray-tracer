@@ -1,4 +1,4 @@
-use lib_ray_tracer::{Canvas, Color, Point, Vector};
+use lib_ray_tracer::{clamp, Canvas, Color, Point, Vector};
 
 struct Environment {
     gravity: Vector,
@@ -16,15 +16,7 @@ impl Projectile {
         self.velocity = self.velocity + env.gravity + env.wind;
     }
 }
-fn clamp(value: f64, max: usize) -> usize {
-    if value < 0.0 {
-        0
-    } else if value as usize >= max {
-        max - 1
-    } else {
-        max - value as usize - 1
-    }
-}
+
 fn write_projectile_position(canvas: &mut Canvas, position: &Point) {
     let red = Color::new(1.0, 0.0, 0.0);
 

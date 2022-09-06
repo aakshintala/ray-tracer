@@ -5,4 +5,5 @@ mod primitives;
 mod utils;
 
 pub use canvas::{Canvas, Color};
-pub use primitives::{Point, Vector};
+pub use primitives::{Matrix, Point, Vector};
+pub use utils::clamp;

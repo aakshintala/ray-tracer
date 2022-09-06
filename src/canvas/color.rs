@@ -2,7 +2,7 @@ use std::ops::{Add, Mul, Sub};
 
 use crate::utils::approx_eq;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Color {
     pub r: f64,
     pub g: f64,
